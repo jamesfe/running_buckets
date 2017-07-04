@@ -84,9 +84,7 @@ function renderGraph(arr, element) {
   var vals = speeds.map(function(a) { return a.value; }).sort(function(a, b) { return a - b; });
   y.domain([0, vals[vals.length - 1]]);
 
-  // How wide should each bar be? TODO: Make this not bad.
 	var bandwidth = (width / speeds.length) - 2;
-  // var bandwidth = 1;
 
 	// Post some Data
 	g.selectAll(".data")
@@ -141,8 +139,7 @@ function makeBuckets(items, numBuckets) {
 	/* Returns an array of items with length numBuckets */
   numBuckets = Math.floor(numBuckets);
   // Do not modify the original array.  Copy it.
-  // Is this a hack?
-  // var segs = JSON.parse(JSON.stringify(items));
+
   var segs = new Array();
   for (var k = 0; k < items.length; k++) {
     segs.push({
@@ -165,35 +162,20 @@ function makeBuckets(items, numBuckets) {
   var startDate = new Date(segs[0].startPoint.datetime);
 
   for (var i = 0; i < numBuckets; i++) {
-    // console.log("REAL I: ", i);
     var secondsToGet = secondsPerBucket;
     var componentSegs = new Array(); // The segments we are about to aggregate
     while (secondsToGet > 0) {
-
-      //  console.log("I: ", currSeg, secondsToGet);
-      if (currSeg >= segs.length) {
-        debugger;
-        throw 'segment counter out of bounds';
-      }
       // If we can easily add it, just do so.
       if (segs[currSeg].seconds <= secondsToGet) {
         componentSegs.push(segs[currSeg]);
         secondsToGet -= segs[currSeg].seconds; // decrement things
-        // console.log("I (1): ", currSeg, secondsToGet);
         currSeg += 1;
       } else {
       // We split this segment up appropriately and then add part of it to this and modify the sitting segment
         var brokenSeg = splitSegment(segs[currSeg], secondsToGet);
-        if (brokenSeg[0].distance < 0) { debugger; }
-        if (brokenSeg[1].distance < 0) { debugger; }
         secondsToGet -= brokenSeg[0].seconds; // decrement counter again
         componentSegs.push(brokenSeg[0]);
         segs[currSeg] = brokenSeg[1];
-
-        // console.log("I (2): ", currSeg, secondsToGet);
-      }
-      if (secondsToGet < 0) {
-        throw "bad error in counting"
       }
     }
 
@@ -215,6 +197,7 @@ function makeBuckets(items, numBuckets) {
     }
   }
 
+  // Given an array of nearly final data, make it into graphable speeds.
   var speeds = retVals.map(function(a, i) {
     var dt = new Date();
     dt.setTime(startDate.getTime() + (i * secondsPerBucket * 1000));
