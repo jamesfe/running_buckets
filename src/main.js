@@ -73,20 +73,20 @@ function renderGraph(arr, element) {
     height = svg.attr("height") - margin.top - margin.bottom;
 
 	var x = d3.scaleTime().domain([arr[0].startPoint.datetime, arr[arr.length - 1].stopPoint.datetime]).range([0, width]);
-	var y = d3.scaleLinear().domain([0, 100]).range([height, 0]);
-	// We may have to modify this in realtime because the number of meters per time period may increase?
-	// Obviously I have not thought out the Y axis in this graph.
+	var y = d3.scaleLinear().range([height, 0]);
 
   var g = svg.append("g")
     .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
 
 	// Calculate the individual bars for the graph.
-	var speeds = makeBuckets(arr, width);
+	var speeds = makeBuckets(arr, width / 30);
 
-  y.domain([0, d3.max(speeds.map(function(a) { return a.value; }))]);
+  var vals = speeds.map(function(a) { return a.value; }).sort(function(a, b) { return a - b; });
+  y.domain([0, vals[vals.length - 1]]);
 
   // How wide should each bar be? TODO: Make this not bad.
-	var bandwidth = (width / speeds.length);
+	var bandwidth = (width / speeds.length) - 2;
+  // var bandwidth = 1;
 
 	// Post some Data
 	g.selectAll(".data")
@@ -114,23 +114,17 @@ function renderGraph(arr, element) {
 			.attr("text-anchor", "end")
 			.attr("font-size", "14")
 			.attr("y", -6)
-			.attr("fill", "#000000")
+			.attr("fill", "#222222")
 			.text("Meters/Second");
 }
 
 function splitSegment(seg, seconds) {
-  /* Split the segment by seconds. Return two new lightweight objects. */
+  /* Split the segment by removing the first n seconds. Return two new lightweight objects. */
   if (seg.seconds < seconds) {
     throw 'Cannot split segment into more seconds'
   }
 
-  var ratio = (seg.seconds / seconds)
-  if ((seconds == 0) || (seg.seconds - seconds == 0)) {
-    debugger;
-  }
-  if (((seg.distance * ratio) == 0) || ((seg.distance * (1 - ratio)) == 0)) {
-    debugger;
-  }
+  var ratio = (seconds / seg.seconds);
   return [
     {
       distance: seg.distance * ratio,
@@ -145,7 +139,7 @@ function splitSegment(seg, seconds) {
 
 function makeBuckets(items, numBuckets) {
 	/* Returns an array of items with length numBuckets */
-
+  numBuckets = Math.floor(numBuckets);
   // Do not modify the original array.  Copy it.
   // Is this a hack?
   // var segs = JSON.parse(JSON.stringify(items));
@@ -164,31 +158,42 @@ function makeBuckets(items, numBuckets) {
   }
 
   var retVals = new Array(numBuckets);
-  var secondsPerBucket = Math.round((segs[segs.length - 1].stopPoint.datetime - segs[0].startPoint.datetime) / numBuckets);
+  var secondsPerBucket = Math.floor((segs[segs.length - 1].stopPoint.datetime - segs[0].startPoint.datetime) / (numBuckets * 1000));
   var currSeg = 0;
 
+  // We use this as the first moment in the race.
+  var startDate = new Date(segs[0].startPoint.datetime);
+
   for (var i = 0; i < numBuckets; i++) {
-    console.log("I: ", i);
+    // console.log("REAL I: ", i);
     var secondsToGet = secondsPerBucket;
     var componentSegs = new Array(); // The segments we are about to aggregate
     while (secondsToGet > 0) {
-      console.log("STG: ", secondsToGet);
+
+      //  console.log("I: ", currSeg, secondsToGet);
       if (currSeg >= segs.length) {
+        debugger;
         throw 'segment counter out of bounds';
       }
       // If we can easily add it, just do so.
-      if ((segs[currSeg].seconds + secondsToGet) < secondsPerBucket) {
+      if (segs[currSeg].seconds <= secondsToGet) {
         componentSegs.push(segs[currSeg]);
         secondsToGet -= segs[currSeg].seconds; // decrement things
+        // console.log("I (1): ", currSeg, secondsToGet);
         currSeg += 1;
       } else {
       // We split this segment up appropriately and then add part of it to this and modify the sitting segment
-        var brokenSeg = splitSegment(segs[currSeg], secondsToGet - segs[currSeg]);
-        if (brokenSeg[0].seconds == 0) { debugger; }
-        if (brokenSeg[1].seconds == 0) { debugger; }
+        var brokenSeg = splitSegment(segs[currSeg], secondsToGet);
+        if (brokenSeg[0].distance < 0) { debugger; }
+        if (brokenSeg[1].distance < 0) { debugger; }
         secondsToGet -= brokenSeg[0].seconds; // decrement counter again
         componentSegs.push(brokenSeg[0]);
         segs[currSeg] = brokenSeg[1];
+
+        // console.log("I (2): ", currSeg, secondsToGet);
+      }
+      if (secondsToGet < 0) {
+        throw "bad error in counting"
       }
     }
 
@@ -197,10 +202,10 @@ function makeBuckets(items, numBuckets) {
       retVals[i] = componentSegs[0];
     } else {
       var distance = componentSegs.reduce(function(s, v) {
-        return (sum + v.distance);
+        return (s + v.distance);
       }, 0);
       var seconds = componentSegs.reduce(function(s, v) {
-        return (sum + v.seconds);
+        return (s + v.seconds);
       }, 0);
       // Set the value to the sum of everything.
       retVals[i] = {
@@ -211,8 +216,8 @@ function makeBuckets(items, numBuckets) {
   }
 
   var speeds = retVals.map(function(a, i) {
-    var dt = new Date(segs[0].startPoint.datetime); // TODO: Make a universal start time in another variable
-    dt.setSeconds(dt.getSeconds() + (i * secondsPerBucket));
+    var dt = new Date();
+    dt.setTime(startDate.getTime() + (i * secondsPerBucket * 1000));
 		return {
 			value: (a.distance / a.seconds),
 			date: dt
