@@ -244,3 +244,4 @@ module.exports = {
   loadAndRender: loadAndRender,
   splitSegment: splitSegment
 }
+

@@ -44,3 +44,8 @@ This has been traced to an inverted divisor in `splitSegments` - I should probab
     - Heart rate data
     - Elevation Data
     - Dynamic bucketing of data
+
+
+## Slider
+
+We want to make the slider work but it means we will have to change a lot of things.  Namely, we have to load the data then have it on hand before we start mucking with it.  This will require some refactoring but I think it will optimize things overall since I will have to modularize a little more and make the code more reusable.
