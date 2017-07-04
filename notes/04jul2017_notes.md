@@ -31,3 +31,14 @@ speeds.map(function(a) { if (height - y(a.value) < 0) { return {h: height - y(a.
 segment counter runs out of bounds for large values of numBuckets.
 
 This has been traced to an inverted divisor in `splitSegments` - I should probably write some unit tests.  That absolutely would have caught this.
+
+
+# Next Steps To Do List
+
+- Beautify this ugly graph
+- Add jslinting to webpack
+- Add some unit tests (big)
+- Spike on:
+    - Heart rate data
+    - Elevation Data
+    - Dynamic bucketing of data
