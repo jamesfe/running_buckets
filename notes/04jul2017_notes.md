@@ -36,6 +36,8 @@ This has been traced to an inverted divisor in `splitSegments` - I should probab
 # Next Steps To Do List
 
 - Beautify this ugly graph
+- Integrate the slider in the rendering
+- Fix the time offset
 - Add jslinting to webpack
 - Add some unit tests (big)
 - Spike on:

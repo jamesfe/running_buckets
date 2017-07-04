@@ -84,10 +84,20 @@ function renderGraph(arr, element) {
   var vals = speeds.map(function(a) { return a.value; }).sort(function(a, b) { return a - b; });
   y.domain([0, vals[vals.length - 1]]);
 
-	var bandwidth = (width / speeds.length) - 2;
+	var bandwidth = (width / speeds.length);
 
 	// Post some Data
-	g.selectAll(".data")
+  g.selectAll(".data")
+		.data(speeds)
+		.enter()
+    .append("rect")
+			.attr("class", "fadeddatabar")
+			.attr("x", function(d) { return x(d.date); } )
+			.attr("y", function(d) { return y(d.value); } )
+			.attr("width", bandwidth)
+			.attr("height", function(d) { return height - y(d.value); });
+
+  g.selectAll(".data")
 		.data(speeds)
 		.enter()
 		.append("rect")
@@ -95,7 +105,7 @@ function renderGraph(arr, element) {
 			.attr("x", function(d) { return x(d.date); } )
 			.attr("y", function(d) { return y(d.value); } )
 			.attr("width", bandwidth)
-			.attr("height", function(d) { return height - y(d.value); });
+			.attr("height", function(d) { return 1; });
 
 
 	// X Axis
@@ -208,3 +218,4 @@ function makeBuckets(items, numBuckets) {
 	});
 	return speeds;
 }
+
