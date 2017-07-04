@@ -23,6 +23,9 @@ function connectEdges(inputArray) {
     if (seconds <= 0) {
       seconds = 0.1;
     }
+    if (distance <= 0) {
+      distance = 0.1;
+    }
 
     var newItem = {
       startPoint: inputArray[i],
@@ -122,6 +125,12 @@ function splitSegment(seg, seconds) {
   }
 
   var ratio = (seg.seconds / seconds)
+  if ((seconds == 0) || (seg.seconds - seconds == 0)) {
+    debugger;
+  }
+  if (((seg.distance * ratio) == 0) || ((seg.distance * (1 - ratio)) == 0)) {
+    debugger;
+  }
   return [
     {
       distance: seg.distance * ratio,
@@ -159,11 +168,13 @@ function makeBuckets(items, numBuckets) {
   var currSeg = 0;
 
   for (var i = 0; i < numBuckets; i++) {
+    console.log("I: ", i);
     var secondsToGet = secondsPerBucket;
     var componentSegs = new Array(); // The segments we are about to aggregate
-    while (secondsToGet < secondsPerBucket) {
+    while (secondsToGet > 0) {
+      console.log("STG: ", secondsToGet);
       if (currSeg >= segs.length) {
-        debugger;
+        throw 'segment counter out of bounds';
       }
       // If we can easily add it, just do so.
       if ((segs[currSeg].seconds + secondsToGet) < secondsPerBucket) {
@@ -173,6 +184,8 @@ function makeBuckets(items, numBuckets) {
       } else {
       // We split this segment up appropriately and then add part of it to this and modify the sitting segment
         var brokenSeg = splitSegment(segs[currSeg], secondsToGet - segs[currSeg]);
+        if (brokenSeg[0].seconds == 0) { debugger; }
+        if (brokenSeg[1].seconds == 0) { debugger; }
         secondsToGet -= brokenSeg[0].seconds; // decrement counter again
         componentSegs.push(brokenSeg[0]);
         segs[currSeg] = brokenSeg[1];
@@ -180,7 +193,7 @@ function makeBuckets(items, numBuckets) {
     }
 
     // Now, we deal with combining the segments.
-    if (componentSegs.lengt === 1) {
+    if (componentSegs.length === 1) {
       retVals[i] = componentSegs[0];
     } else {
       var distance = componentSegs.reduce(function(s, v) {
@@ -198,14 +211,12 @@ function makeBuckets(items, numBuckets) {
   }
 
   var speeds = retVals.map(function(a, i) {
-    var dt = new Date(segs[0].startPoint.datetime);
+    var dt = new Date(segs[0].startPoint.datetime); // TODO: Make a universal start time in another variable
     dt.setSeconds(dt.getSeconds() + (i * secondsPerBucket));
-    debugger;
 		return {
 			value: (a.distance / a.seconds),
 			date: dt
 		};
 	});
-  debugger;
 	return speeds;
 }
