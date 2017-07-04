@@ -129,7 +129,7 @@ function renderGraph(arr, element) {
 function splitSegment(seg, seconds) {
   /* Split the segment by removing the first n seconds. Return two new lightweight objects. */
   if (seg.seconds < seconds) {
-    throw 'Cannot split segment into more seconds'
+    throw 'Cannot split segment into more seconds';
   }
 
   var ratio = (seconds / seg.seconds);
@@ -150,7 +150,7 @@ function makeBuckets(items, numBuckets) {
   numBuckets = Math.floor(numBuckets);
   // Do not modify the original array.  Copy it.
 
-  var segs = new Array();
+  var segs = [];
   for (var k = 0; k < items.length; k++) {
     segs.push({
       distance: items[k].distance,
@@ -173,7 +173,7 @@ function makeBuckets(items, numBuckets) {
 
   for (var i = 0; i < numBuckets; i++) {
     var secondsToGet = secondsPerBucket;
-    var componentSegs = new Array(); // The segments we are about to aggregate
+    var componentSegs = []; // The segments we are about to aggregate
     while (secondsToGet > 0) {
       // If we can easily add it, just do so.
       if (segs[currSeg].seconds <= secondsToGet) {
