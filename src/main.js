@@ -40,16 +40,13 @@ function connectEdges(inputArray) {
 
 d3.xml('./data/jfk50miler.gpx', function(error, data) {
 	if (error) throw error;
-  var offset = 5 * 3600 * 1000; // 5 hours or so * seconds in hour * milliseconds
 	// For each item that matches our XML query, parse w/ this function.
 	data = [].map.call(data.querySelectorAll('trkpt'), function(point) {
-    var origDate = new Date(point.querySelector('time').textContent);
-    origDate.setTime(origDate.getTime() - offset);
     return {
       lat: parseFloat(point.getAttribute('lat')),
       lon: parseFloat(point.getAttribute('lon')),
       elevation: parseFloat(point.querySelector('ele').textContent),
-      datetime: origDate,
+      datetime: addSeconds(new Date(point.querySelector('time').textContent), -1 * 5 * 3600),
       hr: parseInt(point.querySelector('extensions').childNodes[1].childNodes[1].textContent)
     };
 
@@ -80,8 +77,10 @@ function renderGraph(arr, element) {
     width = svg.attr("width") - margin.left - margin.right,
     height = svg.attr("height") - margin.top - margin.bottom;
 
-  var begin = addSeconds(arr[0].startPoint.datetime, -1800);
-  var end = addSeconds(arr[arr.length - 1].stopPoint.datetime, 1800);
+  var halfHour = 0.5 * 3600; // half hour offset
+  var begin = addSeconds(arr[0].startPoint.datetime, -1 * halfHour);
+  var end = addSeconds(arr[arr.length - 1].stopPoint.datetime, halfHour);
+  console.log(begin, end);
 	var x = d3.scaleTime().domain([begin, end]).range([0, width]);
 	var y = d3.scaleLinear().range([height, 0]);
 
