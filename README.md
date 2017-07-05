@@ -8,4 +8,4 @@ npm start
 
 This tool takes a GPX file and converts it to a graph like this:
 
-![graph][./img/graph_sample.png]
+![graph](./img/graph_sample.png)
