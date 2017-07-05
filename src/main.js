@@ -40,14 +40,16 @@ function connectEdges(inputArray) {
 
 d3.xml('./data/jfk50miler.gpx', function(error, data) {
 	if (error) throw error;
-
+  var offset = 5 * 3600 * 1000; // 5 hours or so * seconds in hour * milliseconds
 	// For each item that matches our XML query, parse w/ this function.
 	data = [].map.call(data.querySelectorAll('trkpt'), function(point) {
+    var origDate = new Date(point.querySelector('time').textContent);
+    origDate.setTime(origDate.getTime() - offset);
     return {
       lat: parseFloat(point.getAttribute('lat')),
       lon: parseFloat(point.getAttribute('lon')),
       elevation: parseFloat(point.querySelector('ele').textContent),
-      datetime: new Date(point.querySelector('time').textContent),
+      datetime: origDate,
       hr: parseInt(point.querySelector('extensions').childNodes[1].childNodes[1].textContent)
     };
 
