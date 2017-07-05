@@ -68,13 +68,21 @@ d3.xml('./data/jfk50miler.gpx', function(error, data) {
 
 });
 
+function addSeconds(item, seconds) {
+  var newDate = new Date();
+  newDate.setTime(item.getTime() + (seconds * 1000));
+  return newDate;
+}
+
 function renderGraph(arr, element) {
 	var svg = d3.select('#' + element),
     margin = {top: 20, right: 50,bottom: 20, left: 30},
     width = svg.attr("width") - margin.left - margin.right,
     height = svg.attr("height") - margin.top - margin.bottom;
 
-	var x = d3.scaleTime().domain([arr[0].startPoint.datetime, arr[arr.length - 1].stopPoint.datetime]).range([0, width]);
+  var begin = addSeconds(arr[0].startPoint.datetime, -1800);
+  var end = addSeconds(arr[arr.length - 1].stopPoint.datetime, 1800);
+	var x = d3.scaleTime().domain([begin, end]).range([0, width]);
 	var y = d3.scaleLinear().range([height, 0]);
 
   var g = svg.append("g")
