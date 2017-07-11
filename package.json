@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-    "webpack": "./node_modules/.bin/webpack --config webpack.config.js --watch"
+    "webpack": "./node_modules/.bin/webpack --config webpack.config.js --watch",
+    "test": "./node_modules/mocha/bin/mocha"
   },
   "author": "jamesfe",
   "license": "ISC",
@@ -17,7 +18,8 @@
     "jshint": "^2.9.5",
     "jshint-loader": "^0.8.4",
     "webpack": "^3.0.0",
-    "webpack-dev-server": "^2.5.0"
+    "webpack-dev-server": "^2.5.0",
+    "mocha": "^3.4.2"
   },
   "dependencies": {
     "babel-polyfill": "^6.23.0",
