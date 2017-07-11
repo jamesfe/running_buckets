@@ -1,3 +1,7 @@
+(function () {
+   'use strict';
+}());
+
 /*
  * Load the GPX file, parse it and have the data ready for display.
  */
@@ -7,6 +11,7 @@ var d3 = require('d3');
 
 function connectEdges(inputArray) {
   /* Take a list of vertices and return a list of line objects. */
+  'use strict';
   var retVals = [];
   for (var i = 0; i < inputArray.length - 1; i++) {
     var d1 = {
@@ -39,6 +44,7 @@ function connectEdges(inputArray) {
 }
 
 d3.xml('./data/jfk50miler.gpx', function(error, data) {
+  'use strict';
 	if (error) throw error;
 	// For each item that matches our XML query, parse w/ this function.
 	data = [].map.call(data.querySelectorAll('trkpt'), function(point) {
@@ -66,12 +72,15 @@ d3.xml('./data/jfk50miler.gpx', function(error, data) {
 });
 
 function addSeconds(item, seconds) {
+  /* Add seconds to a date object and return a new date. */
+  'use strict';
   var newDate = new Date();
   newDate.setTime(item.getTime() + (seconds * 1000));
   return newDate;
 }
 
 function renderGraph(arr, element) {
+  'use strict';
 	var svg = d3.select('#' + element),
     margin = {top: 20, right: 50,bottom: 20, left: 30},
     width = svg.attr("width") - margin.left - margin.right,
@@ -80,7 +89,6 @@ function renderGraph(arr, element) {
   var halfHour = 0.5 * 3600; // half hour offset
   var begin = addSeconds(arr[0].startPoint.datetime, -1 * halfHour);
   var end = addSeconds(arr[arr.length - 1].stopPoint.datetime, halfHour);
-  console.log(begin, end);
 	var x = d3.scaleTime().domain([begin, end]).range([0, width]);
 	var y = d3.scaleLinear().range([height, 0]);
 
