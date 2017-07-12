@@ -42,38 +42,40 @@ function connectEdges(inputArray) {
   }
   return retVals;
 }
+function loadAndRender() {
+  d3.xml('./data/jfk50miler.gpx', function(error, data) {
+    'use strict';
+    if (error) throw error;
+    // For each item that matches our XML query, parse w/ this function.
+    data = [].map.call(data.querySelectorAll('trkpt'), function(point) {
+      return {
+        lat: parseFloat(point.getAttribute('lat')),
+        lon: parseFloat(point.getAttribute('lon')),
+        elevation: parseFloat(point.querySelector('ele').textContent),
+        datetime: addSeconds(new Date(point.querySelector('time').textContent), -1 * 5 * 3600),
+        hr: parseInt(point.querySelector('extensions').childNodes[1].childNodes[1].textContent)
+      };
 
-d3.xml('./data/jfk50miler.gpx', function(error, data) {
-  'use strict';
-	if (error) throw error;
-	// For each item that matches our XML query, parse w/ this function.
-	data = [].map.call(data.querySelectorAll('trkpt'), function(point) {
-    return {
-      lat: parseFloat(point.getAttribute('lat')),
-      lon: parseFloat(point.getAttribute('lon')),
-      elevation: parseFloat(point.querySelector('ele').textContent),
-      datetime: addSeconds(new Date(point.querySelector('time').textContent), -1 * 5 * 3600),
-      hr: parseInt(point.querySelector('extensions').childNodes[1].childNodes[1].textContent)
-    };
+    });
 
-	});
+    data.sort(function(b, a){
+      return new Date(b.datetime) - new Date(a.datetime);
+    });
 
-  data.sort(function(b, a){
-    return new Date(b.datetime) - new Date(a.datetime);
+    // At this point we have a nice version of the list. We transform it with the connectEdges function.
+    var edges = connectEdges(data);
+
+    // Now let's render the data.
+
+    renderGraph(edges, 'running_chart');
+
   });
-
-  // At this point we have a nice version of the list. We transform it with the connectEdges function.
-  var edges = connectEdges(data);
-
-  // Now let's render the data.
-
-	renderGraph(edges, 'running_chart');
-
-});
+}
 
 function addSeconds(item, seconds) {
   /* Add seconds to a date object and return a new date. */
   'use strict';
+  if (item instanceof Date === false) { throw "not given a date"; }
   var newDate = new Date();
   newDate.setTime(item.getTime() + (seconds * 1000));
   return newDate;
@@ -236,3 +238,7 @@ function makeBuckets(items, numBuckets) {
 	return speeds;
 }
 
+module.exports = {
+  addSeconds: addSeconds,
+loadAndRender: loadAndRender 
+}
