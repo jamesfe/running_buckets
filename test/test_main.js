@@ -42,32 +42,49 @@ describe('Logic Tests', function() {
   });
 
   var s = {
-    distance: 100,
+    distance: 200,
     seconds: 100
   };
 
   describe('splitSegment Tests', function() {
-    it('should create two items as output', function() {
+    it('should create two items as output if necessary', function() {
       var c = main.splitSegment(s, 20);
       assert.equal(c.length, 2);
-
     });
 
     it('should have both distance and seconds as members', function() {
-      assert.equal(true, false);
+      var c = main.splitSegment(s, 20);
+      assert.notEqual(c[0].distance, undefined);
+      assert.notEqual(c[0].seconds, undefined);
+      assert.notEqual(c[1].distance, undefined);
+      assert.notEqual(c[1].seconds, undefined);
     });
 
 
     it('should not return a zero segment', function() {
-      assert.equal(true, false);
+      assert.throws(
+        () => {
+          main.splitSegment(s, 100)
+        },
+        'bad split value'
+      );
     });
 
     it('should throw an error when split val is too big', function() {
-      assert.equal(true, false);
+      assert.throws(
+        () => {
+          main.splitSegment(s, 200)
+        },
+        'bad split value'
+      );
     });
 
     it('should calculate the right return value', function() {
-      assert.equal(true, false);
+      var c = main.splitSegment(s, 20);
+      assert.equal(c[0].seconds, 20);
+      assert.equal(c[0].distance, 40);
+      assert.equal(c[1].seconds, 80);
+      assert.equal(c[1].distance, 160);
     });
 
   });

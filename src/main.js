@@ -148,8 +148,8 @@ function renderGraph(arr, element) {
 
 function splitSegment(seg, seconds) {
   /* Split the segment by removing the first n seconds. Return two new lightweight objects. */
-  if (seg.seconds < seconds) {
-    throw 'Cannot split segment into more seconds';
+  if (seg.seconds <= seconds) {
+    throw 'bad split value';
   }
 
   var ratio = (seconds / seg.seconds);
