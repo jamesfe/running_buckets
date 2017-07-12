@@ -42,6 +42,7 @@ function connectEdges(inputArray) {
   }
   return retVals;
 }
+
 function loadAndRender() {
   d3.xml('./data/jfk50miler.gpx', function(error, data) {
     'use strict';
@@ -240,5 +241,6 @@ function makeBuckets(items, numBuckets) {
 
 module.exports = {
   addSeconds: addSeconds,
-loadAndRender: loadAndRender 
+  loadAndRender: loadAndRender,
+  splitSegment: splitSegment
 }

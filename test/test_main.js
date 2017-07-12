@@ -3,7 +3,6 @@ var assert = require('assert');
 var main = require('../src/main.js');
 
 describe('Logic Tests', function() {
-
   describe('addSeconds', function() {
     it('adds negative seconds', function() {
       var b = new Date(2017, 1, 1);
@@ -39,6 +38,37 @@ describe('Logic Tests', function() {
       assert.equal(typeof(c), "object");
     });
 
+
+  });
+
+  var s = {
+    distance: 100,
+    seconds: 100
+  };
+
+  describe('splitSegment Tests', function() {
+    it('should create two items as output', function() {
+      var c = main.splitSegment(s, 20);
+      assert.equal(c.length, 2);
+
+    });
+
+    it('should have both distance and seconds as members', function() {
+      assert.equal(true, false);
+    });
+
+
+    it('should not return a zero segment', function() {
+      assert.equal(true, false);
+    });
+
+    it('should throw an error when split val is too big', function() {
+      assert.equal(true, false);
+    });
+
+    it('should calculate the right return value', function() {
+      assert.equal(true, false);
+    });
 
   });
 
