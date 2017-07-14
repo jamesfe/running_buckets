@@ -4,6 +4,7 @@
 
 var geolib = require('geolib');
 var d3 = require('d3');
+var q = d3.queue();
 
 function connectEdges(inputArray) {
   /* Take a list of vertices and return a list of line objects. */
@@ -38,10 +39,11 @@ function connectEdges(inputArray) {
   return retVals;
 }
 
-function loadAndRender() {
+function loadDataAndRenderFirst() {
+  var edges;
   d3.xml('./data/jfk50miler.gpx', function(error, data) {
     if (error) throw error;
-    // For each item that matches our XML query, parse w/ this function.
+    console.log("setting edges once");
     data = [].map.call(data.querySelectorAll('trkpt'), function(point) {
       return {
         lat: parseFloat(point.getAttribute('lat')),
@@ -50,22 +52,15 @@ function loadAndRender() {
         datetime: addSeconds(new Date(point.querySelector('time').textContent), -1 * 5 * 3600),
         hr: parseInt(point.querySelector('extensions').childNodes[1].childNodes[1].textContent)
       };
-
     });
-
     data.sort(function(b, a){
       return new Date(b.datetime) - new Date(a.datetime);
     });
-
-    // At this point we have a nice version of the list. We transform it with the connectEdges function.
-    var edges = connectEdges(data);
-
-    // Now let's render the data.
-
-    renderGraph(edges, 'running_chart');
-
-
+    console.log("Setting edges again!");
+    edges = connectEdges(data);
+    window.edges = renderGraph(edges, 'running_chart', 50);
   });
+  return edges;
 }
 
 function addSeconds(item, seconds) {
@@ -76,7 +71,8 @@ function addSeconds(item, seconds) {
   return newDate;
 }
 
-function renderGraph(arr, element) {
+function renderGraph(arr, element, buckets) {
+  d3.select("#" + element).selectAll("g").remove();
 	var svg = d3.select('#' + element),
     margin = {top: 20, right: 50,bottom: 20, left: 30},
     width = svg.attr("width") - margin.left - margin.right,
@@ -92,7 +88,7 @@ function renderGraph(arr, element) {
     .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
 
 	// Calculate the individual bars for the graph.
-	var speeds = makeBuckets(arr, width / 30);
+	var speeds = makeBuckets(arr, buckets);
 
   var vals = speeds.map(function(a) { return a.value; }).sort(function(a, b) { return a - b; });
   y.domain([0, vals[vals.length - 1]]);
@@ -136,6 +132,7 @@ function renderGraph(arr, element) {
 			.attr("y", -6)
 			.attr("fill", "#222222")
 			.text("Meters/Second");
+  return arr;
 }
 
 function splitSegment(seg, seconds) {
@@ -233,7 +230,8 @@ function makeBuckets(items, numBuckets) {
 
 module.exports = {
   addSeconds: addSeconds,
-  loadAndRender: loadAndRender,
+  loadDataAndRenderFirst: loadDataAndRenderFirst,
+  renderGraph: renderGraph,
   splitSegment: splitSegment
 };
 
