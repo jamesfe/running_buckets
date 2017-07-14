@@ -1,8 +1,11 @@
-var main = require('main.js');
+var main = require('./main');
+var d3 = require('d3');
 
 main.loadAndRender();
 
-// TODO: WIP 
-d3.select("input")
-    .on("input", changed)
-    .on("change", changed);
+function changed() {
+  console.log("Blah");
+}
+
+d3.select("#slider")
+  .on("change", changed);

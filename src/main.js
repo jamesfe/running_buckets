@@ -1,7 +1,3 @@
-(function () {
-   'use strict';
-}());
-
 /*
  * Load the GPX file, parse it and have the data ready for display.
  */
@@ -11,7 +7,6 @@ var d3 = require('d3');
 
 function connectEdges(inputArray) {
   /* Take a list of vertices and return a list of line objects. */
-  'use strict';
   var retVals = [];
   for (var i = 0; i < inputArray.length - 1; i++) {
     var d1 = {
@@ -45,7 +40,6 @@ function connectEdges(inputArray) {
 
 function loadAndRender() {
   d3.xml('./data/jfk50miler.gpx', function(error, data) {
-    'use strict';
     if (error) throw error;
     // For each item that matches our XML query, parse w/ this function.
     data = [].map.call(data.querySelectorAll('trkpt'), function(point) {
@@ -70,12 +64,12 @@ function loadAndRender() {
 
     renderGraph(edges, 'running_chart');
 
+
   });
 }
 
 function addSeconds(item, seconds) {
   /* Add seconds to a date object and return a new date. */
-  'use strict';
   if (item instanceof Date === false) { throw "not given a date"; }
   var newDate = new Date();
   newDate.setTime(item.getTime() + (seconds * 1000));
@@ -83,7 +77,6 @@ function addSeconds(item, seconds) {
 }
 
 function renderGraph(arr, element) {
-  'use strict';
 	var svg = d3.select('#' + element),
     margin = {top: 20, right: 50,bottom: 20, left: 30},
     width = svg.attr("width") - margin.left - margin.right,
@@ -126,7 +119,6 @@ function renderGraph(arr, element) {
 			.attr("y", function(d) { return y(d.value); } )
 			.attr("width", bandwidth)
 			.attr("height", function(d) { return 1; });
-
 
 	// X Axis
 	g.append("g")
@@ -243,5 +235,5 @@ module.exports = {
   addSeconds: addSeconds,
   loadAndRender: loadAndRender,
   splitSegment: splitSegment
-}
+};
 

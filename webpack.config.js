@@ -6,7 +6,7 @@ var webpack = require('webpack');
 module.exports = {
   entry: [
     'babel-polyfill',
-    './src/main.js'
+    './src/render_graph.js'
   ],
   output: {
     filename: 'bundle.js',
