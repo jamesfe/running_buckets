@@ -41,12 +41,13 @@ describe('Logic Tests', function() {
 
   });
 
-  var s = {
-    distance: 200,
-    seconds: 100
-  };
-
   describe('splitSegment Tests', function() {
+    /* Tests for the splitSegment function. */
+    var s = {
+      distance: 200,
+      seconds: 100
+    };
+
     it('should create two items as output if necessary', function() {
       var c = main.splitSegment(s, 20);
       assert.equal(c.length, 2);
@@ -59,7 +60,6 @@ describe('Logic Tests', function() {
       assert.notEqual(c[1].distance, undefined);
       assert.notEqual(c[1].seconds, undefined);
     });
-
 
     it('should not return a zero segment', function() {
       assert.throws(
@@ -86,7 +86,5 @@ describe('Logic Tests', function() {
       assert.equal(c[1].seconds, 80);
       assert.equal(c[1].distance, 160);
     });
-
   });
-
 });
