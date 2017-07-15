@@ -10,4 +10,5 @@ function changed() {
 }
 
 d3.select("#slider")
-  .on("change", changed);
+  .on("change", changed)
+  .on("input", changed);
