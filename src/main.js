@@ -93,6 +93,7 @@ function renderGraph(arr, element, buckets) {
   var vals = speeds.map(function(a) { return a.value; }).sort(function(a, b) { return a - b; });
   y.domain([0, vals[vals.length - 1]]);
 
+  // Somewhere in here is a little bit of code I added at some point to make the bars overlap a bit.  Where is it?
 	var bandwidth = (width / speeds.length);
 
 	// Post some Data

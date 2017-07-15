@@ -7,8 +7,15 @@ In general though, I'm happy that I learned to do the slider and to make a visua
 ## TODO
 
  [X] Slider basic functionality
- [ ] Slider beautification
+ [X] Slider beautification
  [ ] Unit Tests
  [ ] Share graphics
  [ ] Include HR and Elevation data
  [ ] Dynamic histogram bounds based on data
+
+
+## More work from Saturday
+
+[https://css-tricks.com/styling-cross-browser-compatible-range-inputs-css/] for CSS styling - I essentially just nabbed this and removed everything but Chrome since I'm not terribly interested in x-browser right now.
+
+But on my bigger to-do list I should invest some time in reading and looking up various CSS descriptors.
