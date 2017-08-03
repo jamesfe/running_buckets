@@ -61,11 +61,11 @@ function combineSegments(seg1, seg2) {
 function calcError(seg1, seg2) {
   /* calculate the error associated with merging these two segments. */
   var actual = (seg1.distance * seg1.time) + (seg2.distance * seg2.time);
-  var averageSpeed = (seg1.distance + seg2.distance) / (seg1.time + seg2.time)
-  var error1 = Math.abs((averageSpeed * seg1.time) - (seg1.distance * seg1.time))
-  var error2 = Math.abs((averageSpeed * seg2.time) - (seg2.distance * seg2.time))
+  var averageSpeed = (seg1.distance + seg2.distance) / (seg1.time + seg2.time);
+  var error1 = Math.abs((averageSpeed * seg1.time) - (seg1.distance * seg1.time));
+  var error2 = Math.abs((averageSpeed * seg2.time) - (seg2.distance * seg2.time));
   var estimated = error1 + error2;
-  return Math.abs(actual - estimated)
+  return Math.abs(actual - estimated);
 }
 
 function bottomUpSegmentation(inputPoints) {
