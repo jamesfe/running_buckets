@@ -38,6 +38,53 @@ function connectEdges(inputArray) {
   return retVals;
 }
 
+function calcSegment(point1, point2) {
+  /*
+   * point looks like {distance, time}
+   * */
+  var segment = {
+    distance: Math.abs(point2.distance - point1.distance),
+    time: Math.abs(point2.seconds - point1.seconds)
+  };
+  return segment;
+}
+
+function combineSegments(seg1, seg2) {
+   var segment = {
+    distance: Math.abs(point2.distance - point1.distance),
+    time: Math.abs(point2.time - point1.time)
+  };
+  return segment;
+
+}
+
+function calcError(seg1, seg2) {
+  /* calculate the error associated with merging these two segments. */
+  var actual = (seg1.distance * seg1.time) + (seg2.distance * seg2.time);
+  var averageSpeed = (seg1.distance + seg2.distance) / (seg1.time + seg2.time)
+  var error1 = Math.abs((averageSpeed * seg1.time) - (seg1.distance * seg1.time))
+  var error2 = Math.abs((averageSpeed * seg2.time) - (seg2.distance * seg2.time))
+  var estimated = error1 + error2;
+  return Math.abs(actual - estimated)
+}
+
+function bottomUpSegmentation(inputPoints) {
+  /*
+   * Point looks like this: {distance, time}
+   * Segment looks like this: {distance, time}
+   * */
+  var segments = new Array(inputPoints.length - 1);
+  // Calculate all the segments we might ever merge.
+  segments.forEach(function(v, i) {
+    segment[i] = calcSegment(inputPoints[i], inputPoints[i+1]);
+  });
+  var errors = new Array(segments.length - 1);
+  errors.forEach(function(v, i) {
+    errors[i] = calcError(segments[i], segments[i+1]);
+  });
+
+}
+
 function loadDataAndRenderFirst() {
   var edges;
   d3.xml('./data/jfk50miler.gpx', function(error, data) {
@@ -232,6 +279,8 @@ module.exports = {
   addSeconds: addSeconds,
   loadDataAndRenderFirst: loadDataAndRenderFirst,
   renderGraph: renderGraph,
-  splitSegment: splitSegment
+  splitSegment: splitSegment,
+  calcSegment: calcSegment,
+  calcError: calcError
 };
 
