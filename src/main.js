@@ -4,7 +4,6 @@
 
 var geolib = require('geolib');
 var d3 = require('d3');
-var q = d3.queue();
 
 function connectEdges(inputArray) {
   /* Take a list of vertices and return a list of line objects. */
