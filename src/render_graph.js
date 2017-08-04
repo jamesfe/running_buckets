@@ -12,3 +12,5 @@ function changed() {
 d3.select("#slider")
   .on("change", changed)
   .on("input", changed);
+
+main.loadDataAndSegment();

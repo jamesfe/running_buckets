@@ -39,9 +39,7 @@ function connectEdges(inputArray) {
 }
 
 function calcSegment(point1, point2) {
-  /*
-   * point looks like {distance, time}
-   * */
+  /* point looks like {distance: total_distance, seconds: total_time_since_start} * */
   var segment = {
     distance: Math.abs(point2.distance - point1.distance),
     time: Math.abs(point2.seconds - point1.seconds)
@@ -50,6 +48,7 @@ function calcSegment(point1, point2) {
 }
 
 function combineSegments(seg1, seg2) {
+  /* segment looks like {distance: distance_delta_since_last, time: seconds_delta_since_last} */
    var segment = {
     distance: seg2.distance + seg1.distance,
     time: seg2.time + seg1.time
@@ -69,37 +68,50 @@ function calcError(seg1, seg2) {
   return totalError;
 }
 
-function bottomUpSegmentation(inputPoints) {
+function minReducer(a, b, i, arr) {
+  if (b < a.minError) {
+    return {
+      minError: b,
+      index: i
+    };
+  } else {
+    return a;
+  }
+}
+
+function bottomUpSegmentation(inputSegments, maxError) {
   /*
    * Point looks like this: {distance, time}
    * Segment looks like this: {distance, time}
+   * maxError is an int
    * */
+  var segments = inputSegments.map(function(v) {
+    return {
+      distance: v.distance,
+      time: v.seconds
+    };
+  });
+  var origLength = segments.length;
+  /* // maybe we did the wrong thing with segments.  Oopsie.
   var segments = new Array(inputPoints.length - 1).fill({distance: 0, seconds: 0});
   segments.forEach(function(v, i) {
     segments[i] = calcSegment(inputPoints[i], inputPoints[i+1]);
   });
+  */
+  console.log("Before segments: ", segments.length);
   var errors = new Array(segments.length - 1).fill(0);
   errors.forEach(function(v, i) {
     errors[i] = calcError(segments[i], segments[i+1]);
   });
   var currentError = 0;
   var totalError = errors.reduce(function(s, v) { return s + v; }, 0);
+  console.log("Total error: ", totalError);
   // Now we remove all the smallest errors up to a certain size
-  var maxError = 7;
   var currentErrorTotal = 0;
   var count = 0;
   while ((segments.length > 1) && (currentErrorTotal < maxError)) {
     // find the minimum error
-    function minReducer(a, b, i, arr) {
-      if (b < a.minError) {
-        return {
-          minError: b,
-          index: i
-        };
-      } else {
-        return a;
-      }
-    }
+    errors[errors.length - 1] = 100000000000000;
     var mins = errors.reduce(minReducer, {minError: 100000, index: 0});
     // Now we decide to remove the item at mins.index
     if (mins.index < segments.length - 2) {  // This should never happen but we check
@@ -110,14 +122,129 @@ function bottomUpSegmentation(inputPoints) {
       errors[mins.index] = calcError(segments[mins.index], segments[mins.index + 1]); // recalculate error
     }
     count++;
-    if (count > 400) {
+    if (count > (origLength * 2)) {
+      console.log("Max reached.");
+      console.log(errors[errors.length - 1]);
+      console.log(mins);
       break;
     }
-    // do the merge
-    // return a set of segments that contain {distance, seconds}
   }
+  console.log("current error: ", currentErrorTotal);
+  console.log("After segments: ", segments.length);
+  totalError = errors.reduce(function(s, v) { return s + v; }, 0);
+  console.log("Total error: ", totalError);
+
   return segments;
 }
+
+function loadDataAndSegment() {
+  var edges;
+  d3.xml('./data/jfk50miler.gpx', function(error, data) {
+    if (error) throw error;
+    console.log("segment entering");
+    data = [].map.call(data.querySelectorAll('trkpt'), function(point) {
+      return {
+        lat: parseFloat(point.getAttribute('lat')),
+        lon: parseFloat(point.getAttribute('lon')),
+        elevation: parseFloat(point.querySelector('ele').textContent),
+        datetime: addSeconds(new Date(point.querySelector('time').textContent), -1 * 5 * 3600),
+        hr: parseInt(point.querySelector('extensions').childNodes[1].childNodes[1].textContent)
+      };
+    });
+    data.sort(function(b, a){
+      return new Date(b.datetime) - new Date(a.datetime);
+    });
+    console.log("Loading Data And segmenting!");
+    edges = connectEdges(data);
+    // edges contains a list of starting and ending times plus distance gone and seconds
+    renderSegmentedGraph(edges, 'running_segments', 13000, edges[0].startPoint.datetime);
+  });
+  return edges;
+}
+
+function renderSegmentedGraph(arr, element, maxError, startTime) {
+  d3.select("#" + element).selectAll("g").remove();
+	var svg = d3.select('#' + element),
+    margin = {top: 20, right: 50,bottom: 20, left: 30},
+    width = svg.attr("width") - margin.left - margin.right,
+    height = svg.attr("height") - margin.top - margin.bottom;
+
+  var halfHour = 0.5 * 3600; // half hour offset
+  var begin = addSeconds(startTime, -1 * halfHour);
+
+  var segs = bottomUpSegmentation(arr, maxError);
+  // TODO: get a good end time
+  // var end = addSeconds(arr[arr.length - 1].stopPoint.datetime, halfHour);
+  var numSeconds = segs.reduce(function(accum, value) {
+    return accum + value.time;
+  }, 0);
+
+  segs.forEach(function(v, i) {
+    if (i == 0) {
+      segs[i].accumTime = startTime;
+    } else {
+      segs[i].accumTime = addSeconds(segs[i-1].accumTime, v.time);
+    }
+  });
+  console.log("Seconds calc: ", startTime, numSeconds);
+  var end = addSeconds(startTime, numSeconds);
+	var x = d3.scaleTime().domain([begin, end]).range([0, width]);
+	var y = d3.scaleLinear().range([height, 0]);
+
+  var g = svg.append("g")
+    .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+  // It is important that these things be in order.
+  // var vals = speeds.map(function(a) { return a.value; }).sort(function(a, b) { return a - b; });
+  // y.domain([0, vals[vals.length - 1]]);
+  y.domain([0, 5]);
+  // Somewhere in here is a little bit of code I added at some point to make the bars overlap a bit.  Where is it?
+	// var bandwidth = (width / speeds.length);
+  var bandwidth = (width / segs.length);
+
+	// Post some Data
+  /*
+  g.selectAll(".data")
+		.data(speeds)
+		.enter()
+    .append("rect")
+			.attr("class", "fadeddatabar")
+			.attr("x", function(d) { return x(d.date); } )
+			.attr("y", function(d) { return y(d.value); } )
+			.attr("width", bandwidth)
+			.attr("height", function(d) { return height - y(d.value); });
+  */
+  var xStart = x(startTime);
+  g.selectAll(".data")
+		.data(segs)
+		.enter()
+		.append("rect")
+			.attr("class", "databar")
+			.attr("x", function(d) { return x(d.accumTime); } )
+			.attr("y", function(d) { return y(d.distance/d.time); } )
+			.attr("width", function(d) { return Math.abs(xStart - x(addSeconds(startTime, d.time))); })
+			.attr("height", function(d) { return height - y(d.distance/d.time); });
+
+	// X Axis
+	g.append("g")
+		.attr("transform", "translate(0, " + height + ")")
+		.call(d3.axisBottom(x));
+
+	// Y Axis
+	g.append("g")
+		.attr("transform", "translate(" + width + ", 0)")
+		.call(d3.axisRight(y))
+		.append("text")
+			.attr("transform", "rotate(270)")
+			.attr("text-anchor", "end")
+			.attr("font-size", "14")
+			.attr("y", -6)
+			.attr("fill", "#222222")
+			.text("Meters/Second");
+  return arr;
+}
+
+// ---------------- old boring graph below ----------------------
 
 function loadDataAndRenderFirst() {
   var edges;
@@ -316,6 +443,7 @@ module.exports = {
   splitSegment: splitSegment,
   calcSegment: calcSegment,
   calcError: calcError,
-  bottomUpSegmentation: bottomUpSegmentation
+  bottomUpSegmentation: bottomUpSegmentation,
+  loadDataAndSegment: loadDataAndSegment
 };
 
