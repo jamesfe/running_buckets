@@ -51,8 +51,8 @@ function calcSegment(point1, point2) {
 
 function combineSegments(seg1, seg2) {
    var segment = {
-    distance: Math.abs(point2.distance - point1.distance),
-    time: Math.abs(point2.time - point1.time)
+    distance: seg2.distance + seg1.distance,
+    time: seg2.time + seg1.time
   };
   return segment;
 }
@@ -84,18 +84,39 @@ function bottomUpSegmentation(inputPoints) {
   });
   var currentError = 0;
   var totalError = errors.reduce(function(s, v) { return s + v; }, 0);
-  console.log("Max Error: ", totalError);
-  console.log(segments[0])
-  console.log(errors[0])
   // Now we remove all the smallest errors up to a certain size
-  var maxError = 100;
-  var currentTotalError = 0;
-  while (segments.length > 1) && (currentTotalError < maxError) {
+  var maxError = 7;
+  var currentErrorTotal = 0;
+  var count = 0;
+  while ((segments.length > 1) && (currentErrorTotal < maxError)) {
     // find the minimum error
+    function minReducer(a, b, i, arr) {
+      if (b < a.minError) {
+        return {
+          minError: b,
+          index: i
+        };
+      } else {
+        return a;
+      }
+    }
+    var mins = errors.reduce(minReducer, {minError: 100000, index: 0});
+    // Now we decide to remove the item at mins.index
+    if (mins.index < segments.length - 2) {  // This should never happen but we check
+      currentErrorTotal  += mins.minError;
+      segments[mins.index] = combineSegments(segments[mins.index], segments[mins.index + 1]);
+      segments.splice(mins.index + 1, 1); // delete single item
+      errors.splice(mins.index + 1, 1); // delete the extra error
+      errors[mins.index] = calcError(segments[mins.index], segments[mins.index + 1]); // recalculate error
+    }
+    count++;
+    if (count > 400) {
+      break;
+    }
     // do the merge
-    // return a set of segments that contain {distance, seconds} 
+    // return a set of segments that contain {distance, seconds}
   }
-  return "blah";
+  return segments;
 }
 
 function loadDataAndRenderFirst() {

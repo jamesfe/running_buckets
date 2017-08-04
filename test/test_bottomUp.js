@@ -39,13 +39,40 @@ describe('bottomUp tests', function() {
 
   describe('bottomUp tests', function() {
     it('should run', function() {
+      var testPoints = [
+        {distance: 10, seconds: 10},
+        {distance: 20, seconds: 12},
+        {distance: 210, seconds: 100},
+        {distance: 410, seconds: 102}
+      ];
+      var res = main.bottomUpSegmentation(testPoints);
+      assert.equal(res.length, 2); // have to make at least one
+    });
+
+    it('should delete some segments', function() {
       var testPoints = [];
-      for (var i = 0; i < 100; i+=10) {
-        testPoints.push({distance: 100 + i, seconds: i})
+      for (var i = 1; i < 100; i+=10) {
+        testPoints.push({distance: 100/i, seconds: i})
+      }
+      for (var j = 100; j > 0; j-=10) {
+        testPoints.push({distance: 100/j, seconds: j})
       }
       var res = main.bottomUpSegmentation(testPoints);
 
     });
+
+    it('should deal with a descending error', function() {
+      var testPoints = [];
+      for (var i = 1; i < 100; i+=10) {
+        testPoints.push({distance: 100/i, seconds: i})
+      }
+      var res = main.bottomUpSegmentation(testPoints);
+      assert.equal(res.length, 9);
+
+    });
+
+
   });
+
 
 });
