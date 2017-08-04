@@ -27,7 +27,7 @@ describe('bottomUp tests', function() {
       var s1 = { distance: 100, time: 10 };
       var s2 = { distance: 200, time: 10 };
       var err = main.calcError(s1, s2);
-      assert.equal(err, 300);
+      assert.equal(err, 100);
     });
 
     it('should calculate a zero error when values are the same', function() {
@@ -37,5 +37,15 @@ describe('bottomUp tests', function() {
     });
   });
 
+  describe('bottomUp tests', function() {
+    it('should run', function() {
+      var testPoints = [];
+      for (var i = 0; i < 100; i+=10) {
+        testPoints.push({distance: 100 + i, seconds: i})
+      }
+      var res = main.bottomUpSegmentation(testPoints);
+
+    });
+  });
 
 });

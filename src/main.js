@@ -55,17 +55,18 @@ function combineSegments(seg1, seg2) {
     time: Math.abs(point2.time - point1.time)
   };
   return segment;
-
 }
 
 function calcError(seg1, seg2) {
   /* calculate the error associated with merging these two segments. */
   var actual = (seg1.distance * seg1.time) + (seg2.distance * seg2.time);
   var averageSpeed = (seg1.distance + seg2.distance) / (seg1.time + seg2.time);
-  var error1 = Math.abs((averageSpeed * seg1.time) - (seg1.distance * seg1.time));
-  var error2 = Math.abs((averageSpeed * seg2.time) - (seg2.distance * seg2.time));
-  var estimated = error1 + error2;
-  return Math.abs(actual - estimated);
+  var error1 = Math.abs((averageSpeed * seg1.time) - seg1.distance);
+  var error2 = Math.abs((averageSpeed * seg2.time) - seg2.distance);
+  var totalError = Math.abs(error1 + error2);
+  // console.log(seg1, seg2);
+  // console.log(actual, error1, error2, averageSpeed, totalError);
+  return totalError;
 }
 
 function bottomUpSegmentation(inputPoints) {
@@ -74,15 +75,26 @@ function bottomUpSegmentation(inputPoints) {
    * Segment looks like this: {distance, time}
    * */
   var segments = new Array(inputPoints.length - 1);
+  console.log("Sg length: ", segments.length);
+  for (var i = 0; i < segments.length - 1; i++) {
+
+    console.log(calcSegment(inputPoints[i], inputPoints[i+1]));
+  }
   // Calculate all the segments we might ever merge.
-  segments.forEach(function(v, i) {
-    segment[i] = calcSegment(inputPoints[i], inputPoints[i+1]);
+  segments = segments.map(function(v, i) {
+    console.log("segments: ", v, i);
+    return calcSegment(inputPoints[i], inputPoints[i+1]);
   });
   var errors = new Array(segments.length - 1);
   errors.forEach(function(v, i) {
     errors[i] = calcError(segments[i], segments[i+1]);
   });
-
+  var currentError = 0;
+  var totalError = errors.reduce(function(s, v) { return s + v; }, 0);
+  console.log("Max Error: ", totalError);
+  console.log(segments[0])
+  console.log(errors[0])
+  return "blah";
 }
 
 function loadDataAndRenderFirst() {
@@ -281,6 +293,7 @@ module.exports = {
   renderGraph: renderGraph,
   splitSegment: splitSegment,
   calcSegment: calcSegment,
-  calcError: calcError
+  calcError: calcError,
+  bottomUpSegmentation: bottomUpSegmentation
 };
 
