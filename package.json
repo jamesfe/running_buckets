@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node_modules/webpack-dev-server/bin/webpack-dev-server.js",
     "webpack": "./node_modules/.bin/webpack --config webpack.config.js --watch",
-    "test": "./node_modules/mocha/bin/mocha"
+    "test": "mocha"
   },
   "author": "jamesfe",
   "license": "ISC",

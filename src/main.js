@@ -74,18 +74,11 @@ function bottomUpSegmentation(inputPoints) {
    * Point looks like this: {distance, time}
    * Segment looks like this: {distance, time}
    * */
-  var segments = new Array(inputPoints.length - 1);
-  console.log("Sg length: ", segments.length);
-  for (var i = 0; i < segments.length - 1; i++) {
-
-    console.log(calcSegment(inputPoints[i], inputPoints[i+1]));
-  }
-  // Calculate all the segments we might ever merge.
-  segments = segments.map(function(v, i) {
-    console.log("segments: ", v, i);
-    return calcSegment(inputPoints[i], inputPoints[i+1]);
+  var segments = new Array(inputPoints.length - 1).fill({distance: 0, seconds: 0});
+  segments.forEach(function(v, i) {
+    segments[i] = calcSegment(inputPoints[i], inputPoints[i+1]);
   });
-  var errors = new Array(segments.length - 1);
+  var errors = new Array(segments.length - 1).fill(0);
   errors.forEach(function(v, i) {
     errors[i] = calcError(segments[i], segments[i+1]);
   });
@@ -94,6 +87,14 @@ function bottomUpSegmentation(inputPoints) {
   console.log("Max Error: ", totalError);
   console.log(segments[0])
   console.log(errors[0])
+  // Now we remove all the smallest errors up to a certain size
+  var maxError = 100;
+  var currentTotalError = 0;
+  while (segments.length > 1) && (currentTotalError < maxError) {
+    // find the minimum error
+    // do the merge
+    // return a set of segments that contain {distance, seconds} 
+  }
   return "blah";
 }
 
