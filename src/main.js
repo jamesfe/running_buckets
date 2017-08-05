@@ -63,8 +63,6 @@ function calcError(seg1, seg2) {
   var error1 = Math.abs((averageSpeed * seg1.time) - seg1.distance);
   var error2 = Math.abs((averageSpeed * seg2.time) - seg2.distance);
   var totalError = Math.abs(error1 + error2);
-  // console.log(seg1, seg2);
-  // console.log(actual, error1, error2, averageSpeed, totalError);
   return totalError;
 }
 
@@ -79,7 +77,7 @@ function minReducer(a, b, i, arr) {
   }
 }
 
-function bottomUpSegmentation(inputSegments, maxError) {
+function bottomUpSegmentation(inputSegments, percentToRemove) {
   /*
    * Point looks like this: {distance, time}
    * Segment looks like this: {distance, time}
@@ -92,48 +90,43 @@ function bottomUpSegmentation(inputSegments, maxError) {
     };
   });
   var origLength = segments.length;
-  /* // maybe we did the wrong thing with segments.  Oopsie.
-  var segments = new Array(inputPoints.length - 1).fill({distance: 0, seconds: 0});
-  segments.forEach(function(v, i) {
-    segments[i] = calcSegment(inputPoints[i], inputPoints[i+1]);
-  });
-  */
-  console.log("Before segments: ", segments.length);
+  var percentPerSegment = 100 / segments.length;
   var errors = new Array(segments.length - 1).fill(0);
   errors.forEach(function(v, i) {
     errors[i] = calcError(segments[i], segments[i+1]);
   });
   var currentError = 0;
   var totalError = errors.reduce(function(s, v) { return s + v; }, 0);
-  console.log("Total error: ", totalError);
-  // Now we remove all the smallest errors up to a certain size
   var currentErrorTotal = 0;
   var count = 0;
-  while ((segments.length > 1) && (currentErrorTotal < maxError)) {
-    // find the minimum error
-    errors[errors.length - 1] = 100000000000000;
-    var mins = errors.reduce(minReducer, {minError: 100000, index: 0});
+  var percentRemoved = 0;
+  var numIters = 0;
+  while (percentRemoved < percentToRemove) {
+    var mins = errors.reduce(minReducer, {minError: 10000, index: 0});
     // Now we decide to remove the item at mins.index
-    if (mins.index < segments.length - 2) {  // This should never happen but we check
-      currentErrorTotal  += mins.minError;
+    if (mins.index < segments.length - 1) {  // This should never happen but we check
+      currentErrorTotal += mins.minError;
       segments[mins.index] = combineSegments(segments[mins.index], segments[mins.index + 1]);
       segments.splice(mins.index + 1, 1); // delete single item
-      errors.splice(mins.index + 1, 1); // delete the extra error
-      errors[mins.index] = calcError(segments[mins.index], segments[mins.index + 1]); // recalculate error
+      errors.splice(mins.index, 1); // delete the extra error
+      // At this point, if we have modified the first or last item in the array we have a little probem
+      if (mins.index > 0) {
+        errors[mins.index - 1] = calcError(segments[mins.index - 1], segments[mins.index]);
+      }
+      if (mins.index < segments.length - 1) { // If we have not deleted the last item in the array
+        errors[mins.index] = calcError(segments[mins.index], segments[mins.index + 1]);
+      }
+      percentRemoved += percentPerSegment;
+    } else {
+      console.log("Skipping?");
+      debugger;
     }
-    count++;
-    if (count > (origLength * 2)) {
-      console.log("Max reached.");
-      console.log(errors[errors.length - 1]);
-      console.log(mins);
+
+    numIters++;
+    if (numIters > origLength * 2) {
       break;
     }
   }
-  console.log("current error: ", currentErrorTotal);
-  console.log("After segments: ", segments.length);
-  totalError = errors.reduce(function(s, v) { return s + v; }, 0);
-  console.log("Total error: ", totalError);
-
   return segments;
 }
 
@@ -141,7 +134,6 @@ function loadDataAndSegment() {
   var edges;
   d3.xml('./data/jfk50miler.gpx', function(error, data) {
     if (error) throw error;
-    console.log("segment entering");
     data = [].map.call(data.querySelectorAll('trkpt'), function(point) {
       return {
         lat: parseFloat(point.getAttribute('lat')),
@@ -154,10 +146,9 @@ function loadDataAndSegment() {
     data.sort(function(b, a){
       return new Date(b.datetime) - new Date(a.datetime);
     });
-    console.log("Loading Data And segmenting!");
     edges = connectEdges(data);
     // edges contains a list of starting and ending times plus distance gone and seconds
-    renderSegmentedGraph(edges, 'running_segments', 13000, edges[0].startPoint.datetime);
+    renderSegmentedGraph(edges, 'running_segments', 98, edges[0].startPoint.datetime);
   });
   return edges;
 }
@@ -173,12 +164,11 @@ function renderSegmentedGraph(arr, element, maxError, startTime) {
   var begin = addSeconds(startTime, -1 * halfHour);
 
   var segs = bottomUpSegmentation(arr, maxError);
-  // TODO: get a good end time
-  // var end = addSeconds(arr[arr.length - 1].stopPoint.datetime, halfHour);
   var numSeconds = segs.reduce(function(accum, value) {
     return accum + value.time;
   }, 0);
 
+  // TODO: Good candidate to be a reduce
   segs.forEach(function(v, i) {
     if (i == 0) {
       segs[i].accumTime = startTime;
@@ -186,7 +176,6 @@ function renderSegmentedGraph(arr, element, maxError, startTime) {
       segs[i].accumTime = addSeconds(segs[i-1].accumTime, v.time);
     }
   });
-  console.log("Seconds calc: ", startTime, numSeconds);
   var end = addSeconds(startTime, numSeconds);
 	var x = d3.scaleTime().domain([begin, end]).range([0, width]);
 	var y = d3.scaleLinear().range([height, 0]);
@@ -194,26 +183,9 @@ function renderSegmentedGraph(arr, element, maxError, startTime) {
   var g = svg.append("g")
     .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
 
-  // It is important that these things be in order.
-  // var vals = speeds.map(function(a) { return a.value; }).sort(function(a, b) { return a - b; });
-  // y.domain([0, vals[vals.length - 1]]);
   y.domain([0, 5]);
-  // Somewhere in here is a little bit of code I added at some point to make the bars overlap a bit.  Where is it?
-	// var bandwidth = (width / speeds.length);
   var bandwidth = (width / segs.length);
 
-	// Post some Data
-  /*
-  g.selectAll(".data")
-		.data(speeds)
-		.enter()
-    .append("rect")
-			.attr("class", "fadeddatabar")
-			.attr("x", function(d) { return x(d.date); } )
-			.attr("y", function(d) { return y(d.value); } )
-			.attr("width", bandwidth)
-			.attr("height", function(d) { return height - y(d.value); });
-  */
   var xStart = x(startTime);
   g.selectAll(".data")
 		.data(segs)
@@ -243,8 +215,6 @@ function renderSegmentedGraph(arr, element, maxError, startTime) {
 			.text("Meters/Second");
   return arr;
 }
-
-// ---------------- old boring graph below ----------------------
 
 function loadDataAndRenderFirst() {
   var edges;

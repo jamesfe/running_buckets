@@ -45,8 +45,8 @@ describe('bottomUp tests', function() {
         {distance: 210, seconds: 100},
         {distance: 410, seconds: 102}
       ];
-      var res = main.bottomUpSegmentation(testPoints);
-      assert.equal(res.length, 2); // have to make at least one
+      var res = main.bottomUpSegmentation(testPoints, 0);
+      assert(res.length >= 2);
     });
 
     it('should delete some segments', function() {
@@ -66,13 +66,8 @@ describe('bottomUp tests', function() {
       for (var i = 1; i < 100; i+=10) {
         testPoints.push({distance: 100/i, seconds: i})
       }
-      var res = main.bottomUpSegmentation(testPoints);
+      var res = main.bottomUpSegmentation(testPoints, 10);
       assert.equal(res.length, 9);
-
     });
-
-
   });
-
-
 });
