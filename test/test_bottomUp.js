@@ -1,6 +1,6 @@
 var assert = require('assert');
 
-var main = require('../src/main.js');
+var main = require('../src/bottomUp.js');
 
 describe('bottomUp tests', function() {
 
