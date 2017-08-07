@@ -9,11 +9,14 @@ function movingAverage(inArray, numSegments) {
   * average for the last 30 segments is included.
   * */
   // TODO: Assert all time segments in inArray are equal
-  // TODO: assert numSegmetns < inArray.length
-  // Naive implementation
+  
+  if (numSegments > inArray.length) {
+    throw("number of segments is too");
+  }
+
   var results = new Array(inArray.length).fill(0); // TODO: check fill so it can be looped?
   var avgVals = [];
-  for (var i = 0; i < results.length - 1; i++) {
+  for (var i = 0; i < results.length; i++) {
     if (avgVals.length < numSegments) {
       avgVals.push(inArray[i].distance);
     } else {
