@@ -50,28 +50,24 @@ describe('movingAverage tests', function() {
         () => {
           var res = ma.movingAverage([], 50);
         },
-        "number of segments is too big"
+        /number of segments is too big/
       );
     });
 
-    it('should not allow non-timed timelines', function() {
-       assert.throws(
-        () => {
-          var inputs = new Array(5).fill({distance: 10});
-          var res = ma.movingAverage(inputs, 2);
-        },
-        "need to provide equal time sets"
-      );
+    it('should allow non-timed timelines', function() {
+        var inputs = new Array(5).fill({distance: 10});
+        var res = ma.movingAverage(inputs, 2);
+        assert(res.length == 5);
     });
 
     it('should not allow non-equal sized timelines', function() {
        assert.throws(
         () => {
           var inputs = new Array(5).fill({distance: 10, seconds: 5});
-          inputs[3].seconds = 3;
+          inputs[3] = {distance: 10, seconds: 3};
           var res = ma.movingAverage(inputs, 2);
         },
-        "need to provide equal time sets"
+        /must be equal times or no times at all/
       );
     });
 

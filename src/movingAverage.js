@@ -9,9 +9,13 @@ function movingAverage(inArray, numSegments) {
   * average for the last 30 segments is included.
   * */
   // TODO: Assert all time segments in inArray are equal
-  
+
   if (numSegments > inArray.length) {
-    throw("number of segments is too");
+    throw(new Error("number of segments is too big"));
+  }
+
+  if (!inArray.every(function(v, i, arr) { return (v.seconds === undefined || v.seconds === arr[0].seconds); })) {
+    throw(new Error("must be equal times or no times at all"));
   }
 
   var results = new Array(inArray.length).fill(0); // TODO: check fill so it can be looped?
