@@ -8,19 +8,18 @@ function movingAverage(inArray, numSegments) {
   * An array equal to length of inArray and in each item of that array, the moving
   * average for the last 30 segments is included.
   * */
-  // TODO: Assert all time segments in inArray are equal
-
   if (numSegments > inArray.length) {
     throw(new Error("number of segments is too big"));
   }
 
-  if (!inArray.every(function(v, i, arr) { return (v.seconds === undefined || v.seconds === arr[0].seconds); })) {
-    throw(new Error("must be equal times or no times at all"));
-  }
-
-  var results = new Array(inArray.length).fill(0); // TODO: check fill so it can be looped?
+  var results = [];
   var avgVals = [];
-  for (var i = 0; i < results.length; i++) {
+  // TODO: Optimize this so we aren't storing 30 extra items. Keep a running total.
+  var timeCheck = inArray[0].seconds;
+  for (var i = 0; i < inArray.length; i++) {
+    if (inArray[i].seconds != timeCheck) {
+      throw(new Error("must be equal times or no times at all"));
+    }
     if (avgVals.length < numSegments) {
       avgVals.push(inArray[i].distance);
     } else {
@@ -28,7 +27,7 @@ function movingAverage(inArray, numSegments) {
       avgVals.splice(0, 1); // delete the first thingy
     }
     var avgVal = avgVals.reduce(function(a, i) { return a + i; }, 0) / avgVals.length;
-    results[i] = avgVal;
+    results.push(avgVal);
   }
   return results;
 }
