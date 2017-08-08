@@ -5,6 +5,7 @@
 var geolib = require('geolib');
 var d3 = require('d3');
 var bottomUp = require('./bottomUp');
+var ma = require('./movingAverage');
 
 function connectEdges(inputArray) {
   /* Take a list of vertices and return a list of line objects. */
@@ -144,7 +145,7 @@ function loadDataAndRenderFirst() {
     });
     console.log("Setting edges again!");
     edges = connectEdges(data);
-    window.edges = renderGraph(edges, 'running_chart', 50);
+    window.edges = renderGraph(edges, 'running_chart', 5000);
   });
   return edges;
 }
@@ -181,6 +182,24 @@ function renderGraph(arr, element, buckets) {
 
   // Somewhere in here is a little bit of code I added at some point to make the bars overlap a bit.  Where is it?
 	var bandwidth = (width / speeds.length);
+
+  /* Let's calculate moving average right here. */
+  var averageLine = ma.movingAverage(arr, buckets/10).map(function(v, i) { return {seconds: addSeconds(begin, i), speed: v};});
+
+  /* We are finding here that the segments we are receiving are not really well split up.  Maybe we need to start at a higher value? */
+
+  var vline = d3.line()
+    .x(function(d) { return x(d.seconds); })
+    .y(function(d) { return y(d.speed); });
+
+  g.append("path")
+    .data([averageLine])
+    .attr("class", "line")
+    .attr("d", vline)
+    .style("stroke", "red");
+
+  /* End of calculating the moving average line. */
+
 
 	// Post some Data
   g.selectAll(".data")

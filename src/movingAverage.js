@@ -9,7 +9,7 @@ function movingAverage(inArray, numSegments) {
   * average for the last 30 segments is included.
   * */
   if (numSegments > inArray.length) {
-    throw(new Error("number of segments is too big"));
+    throw new Error("number of segments is too big");
   }
 
   var results = [];
@@ -18,7 +18,7 @@ function movingAverage(inArray, numSegments) {
   var timeCheck = inArray[0].seconds;
   for (var i = 0; i < inArray.length; i++) {
     if (inArray[i].seconds != timeCheck) {
-      throw(new Error("must be equal times or no times at all"));
+      // throw(new Error("must be equal times or no times at all"));
     }
     if (avgVals.length < numSegments) {
       avgVals.push(inArray[i].distance);
@@ -34,4 +34,4 @@ function movingAverage(inArray, numSegments) {
 
 module.exports = {
   movingAverage: movingAverage
-}
+};
